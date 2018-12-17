@@ -51,6 +51,43 @@ namespace g2o {
     }
   }
 
+#ifndef NUMERIC_JACOBIAN_TWO_D_TYPES
+  void EdgeSE2::linearizeOplus()
+  {
+    // some sanity checks, probably not necessary
+    assert(_jacobianOplus.size() == 3 && "jacobian cache dimension does not match");
+
+    assert(_jacobianOplus[i].rows() == _dimension && _jacobianOplus[i].cols() == vi_dim && "jacobian cache dimension does not match");
+
+    const VertexSE2* vi = static_cast<const VertexSE2*>(_vertices[0]);
+    const VertexSE2* vj = static_cast<const VertexSE2*>(_vertices[1]);
+    const VertexSE2* l  = static_cast<VertexSE2*>(_vertices[2]);
+    number_t thetai = vi->estimate().rotation().angle();
+
+    Vector2 dt = vj->estimate().translation() - vi->estimate().translation();
+    number_t si=std::sin(thetai), ci=std::cos(thetai);
+
+    I think:
+    _jacobianOplus[0] vi_vj
+    _jacobianOplus[1] vi_l
+    _jacobianOplus[2] vj_l
+    _jacobianOplusXi(0, 0) = -ci; _jacobianOplusXi(0, 1) = -si; _jacobianOplusXi(0, 2) = -si*dt.x()+ci*dt.y();
+    _jacobianOplusXi(1, 0) =  si; _jacobianOplusXi(1, 1) = -ci; _jacobianOplusXi(1, 2) = -ci*dt.x()-si*dt.y();
+    _jacobianOplusXi(2, 0) =  0;  _jacobianOplusXi(2, 1) = 0;   _jacobianOplusXi(2, 2) = -1;
+
+    _jacobianOplusXj(0, 0) = ci; _jacobianOplusXj(0, 1)= si; _jacobianOplusXj(0, 2)= 0;
+    _jacobianOplusXj(1, 0) =-si; _jacobianOplusXj(1, 1)= ci; _jacobianOplusXj(1, 2)= 0;
+    _jacobianOplusXj(2, 0) = 0;  _jacobianOplusXj(2, 1)= 0;  _jacobianOplusXj(2, 2)= 1;
+
+    const SE2& rmean = _inverseMeasurement;
+    Matrix3 z = Matrix3::Zero();
+    z.block<2, 2>(0, 0) = rmean.rotation().toRotationMatrix();
+    z(2, 2) = 1.;
+    _jacobianOplusXi = z * _jacobianOplusXi;
+    _jacobianOplusXj = z * _jacobianOplusXj;
+  }
+#endif
+
   bool EdgeSE2SensorCalib::read(std::istream& is)
   {
     Vector3 p;

@@ -67,6 +67,9 @@ namespace g2o {
         return -1.0;
       }
       virtual void initialEstimate(const OptimizableGraph::VertexSet& from, OptimizableGraph::Vertex* to);
+#ifndef NUMERIC_JACOBIAN_TWO_D_TYPES
+      virtual void linearizeOplus();
+#endif
 
       virtual bool read(std::istream& is);
       virtual bool write(std::ostream& os) const;
