@@ -6,6 +6,10 @@ os:
   - linux
   - osx
 
+env:
+  global:
+    - MAKEFLAGS="-j 2"
+
 notifications:
   email:
     recipients:
@@ -27,10 +31,19 @@ install:
 before_script:
   - mkdir build
   - cd build
-  - cmake ..
+  - if [[ "$CC" == "gcc" && "$TRAVIS_OS_NAME" == "linux" ]]; then
+      export CC=gcc-8 ;
+      export CXX=g++-8 ;
+    fi
+  - cmake --version
+  - cmake -DBUILD_UNITTESTS=ON ..
   - cat g2o/config.h
 
-script: make
+script:
+  - make
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      ctest --extra-verbose ;
+    fi
 
 # right now only build the master branch
 branches:

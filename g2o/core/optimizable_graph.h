@@ -29,9 +29,6 @@
 
 #include <set>
 #include <iostream>
-#include <list>
-#include <limits>
-#include <cmath>
 #include <typeinfo>
 
 #include "openmp_mutex.h"
@@ -47,7 +44,6 @@ namespace g2o {
 
   class HyperGraphAction;
   struct OptimizationAlgorithmProperty;
-  class Cache;
   class CacheContainer;
   class RobustKernel;
 
@@ -439,9 +435,9 @@ namespace g2o {
         //! returns the dimensions of the error function
         int dimension() const { return _dimension;}
 
-        G2O_ATTRIBUTE_DEPRECATED(virtual Vertex* createFrom()) {return 0;}
-	G2O_ATTRIBUTE_DEPRECATED(virtual Vertex* createTo())   {return 0;}
-	virtual Vertex* createVertex(int) {return 0;}
+        G2O_ATTRIBUTE_DEPRECATED(virtual Vertex* createFrom()) {return nullptr;}
+	G2O_ATTRIBUTE_DEPRECATED(virtual Vertex* createTo())   {return nullptr;}
+	virtual Vertex* createVertex(int) {return nullptr;}
 
         //! read the vertex from a stream, i.e., the internal state of the vertex
         virtual bool read(std::istream& is) = 0;

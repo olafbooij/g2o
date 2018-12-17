@@ -26,6 +26,7 @@
 
 #include "vertex_line3d.h"
 
+#include "g2o/stuff/misc.h"
 #include "g2o/stuff/opengl_wrapper.h"
 
 namespace g2o {
@@ -72,7 +73,7 @@ namespace g2o {
   HyperGraphElementAction* VertexLine3DDrawAction::operator()(HyperGraph::HyperGraphElement* element,
 							     HyperGraphElementAction::Parameters* params_) {
     if(typeid(*element).name() != _typeName) {
-      return 0;
+      return nullptr;
     }
 
     refreshPropertyPtrs(params_);
