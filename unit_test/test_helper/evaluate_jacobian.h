@@ -29,6 +29,7 @@
 
 #include "g2o/core/base_unary_edge.h"
 #include "g2o/core/base_binary_edge.h"
+#include "g2o/core/base_multi_edge.h"
 
 #include <Eigen/Core>
 
@@ -81,6 +82,31 @@ void evaluateJacobian(EdgeType& e, JacobianWorkspace& jacobianWorkspace, Jacobia
         numElems *= EdgeType::VertexXiType::Dimension;
       else
         numElems *= EdgeType::VertexXjType::Dimension;
+      for (int j = 0; j < numElems; ++j) {
+        EXPECT_NEAR(n[j], a[j], 1e-6);
+      }
+    }
+}
+
+template <typename EdgeType>
+void evaluateJacobianMulti(EdgeType& e, JacobianWorkspace& jacobianWorkspace, JacobianWorkspace& numericJacobianWorkspace)
+{
+    // calling the analytic Jacobian but writing to the numeric workspace
+    e.BaseMultiEdge<EdgeType::Dimension, typename EdgeType::Measurement>::linearizeOplus(numericJacobianWorkspace);
+    // copy result into analytic workspace
+    jacobianWorkspace = numericJacobianWorkspace;
+
+    // compute the numeric Jacobian into the numericJacobianWorkspace workspace as setup by the previous call
+    e.BaseMultiEdge<EdgeType::Dimension, typename EdgeType::Measurement>::linearizeOplus();
+
+    // compare the two Jacobians
+    for (std::size_t i = 0; i < e.vertices().size(); ++i) {
+      std::cout << "evaluating vertex " << i << std::endl;
+      number_t* n = numericJacobianWorkspace.workspaceForVertex(i);
+      number_t* a = jacobianWorkspace.workspaceForVertex(i);
+      int numElems = EdgeType::Dimension;
+      const OptimizableGraph::Vertex* v = static_cast<const OptimizableGraph::Vertex*>(e.vertex(i));
+      numElems *= v->dimension(); // e.vertices().at(i)->dimension();
       for (int j = 0; j < numElems; ++j) {
         EXPECT_NEAR(n[j], a[j], 1e-6);
       }
