@@ -55,7 +55,7 @@ TEST(Sclam2D, EdgeSE2SensorCalibJacobian)
   e.setVertex(0, &v1);
   e.setVertex(1, &v2);
   e.setVertex(2, &v3);
-  e.setInformation(EdgeSE2::InformationType::Identity());
+  e.setInformation(EdgeSE2SensorCalib::InformationType::Identity());
 
   JacobianWorkspace jacobianWorkspace;
   JacobianWorkspace numericJacobianWorkspace;
@@ -69,6 +69,6 @@ TEST(Sclam2D, EdgeSE2SensorCalibJacobian)
     v3.setEstimate(randomSE2());
     e.setMeasurement(randomSE2());
 
-    evaluateJacobian(e, jacobianWorkspace, numericJacobianWorkspace);
+    evaluateJacobianMulti(e, jacobianWorkspace, numericJacobianWorkspace);
   }
 }
