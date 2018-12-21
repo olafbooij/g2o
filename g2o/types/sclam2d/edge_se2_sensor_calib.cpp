@@ -85,7 +85,7 @@ namespace g2o {
     vj_jac(1, 0) = 0; vj_jac(1, 1)= 1; vj_jac(1, 2)=  vj_cos * l_est.translation().x() - vj_sin * l_est.translation().y();
     vj_jac(2, 0) = 0; vj_jac(2, 1)= 0; vj_jac(2, 2)= 1;
     Matrix3 zj = Matrix3::Identity();
-    zj.block<2, 2>(0, 0) = - (_inverseMeasurement.rotation() * (vi_est.rotation() * l_est.rotation()).inverse()).toRotationMatrix();
+    zj.block<2, 2>(0, 0) = (_inverseMeasurement.rotation() * (vi_est.rotation() * l_est.rotation()).inverse()).toRotationMatrix();
     vj_jac = zj * vj_jac;
 
     //todo
@@ -95,7 +95,7 @@ namespace g2o {
     l_jac(2, 0) = 0; l_jac(2, 1)= 0; l_jac(2, 2)= 0;
     Matrix3 zl = Matrix3::Identity();
     zl.block<2, 2>(0, 0) = - _inverseMeasurement.rotation().toRotationMatrix();
-    vj_jac = zl * vj_jac;
+    l_jac = zl * l_jac;
   }
 #endif
 
