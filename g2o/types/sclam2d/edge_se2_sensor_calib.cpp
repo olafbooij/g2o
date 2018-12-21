@@ -59,32 +59,44 @@ namespace g2o {
 
     assert(_jacobianOplus[i].rows() == _dimension && _jacobianOplus[i].cols() == vi_dim && "jacobian cache dimension does not match");
 
-    const VertexSE2* vi = static_cast<const VertexSE2*>(_vertices[0]);
-    const VertexSE2* vj = static_cast<const VertexSE2*>(_vertices[1]);
-    const VertexSE2* l  = static_cast<VertexSE2*>(_vertices[2]);
-    number_t thetai = vi->estimate().rotation().angle();
+    const SE2* vi_est = static_cast<const VertexSE2*>(_vertices[0])->estimate;
+    const SE2* vj_est = static_cast<const VertexSE2*>(_vertices[1])->estimate;
+    const SE2* l_est  = static_cast<VertexSE2*>(_vertices[2])->estimate;
 
-    Vector2 dt = vj->estimate().translation() - vi->estimate().translation();
-    number_t si=std::sin(thetai), ci=std::cos(thetai);
+    Vector2 dt = vj_est->estimate(n() - vi_est.translation() + vj_est.rotation() * l_est.translation();
 
-    I think:
-    _jacobianOplus[0] vi_vj
-    _jacobianOplus[1] vi_l
-    _jacobianOplus[2] vj_l
-    _jacobianOplusXi(0, 0) = -ci; _jacobianOplusXi(0, 1) = -si; _jacobianOplusXi(0, 2) = -si*dt.x()+ci*dt.y();
-    _jacobianOplusXi(1, 0) =  si; _jacobianOplusXi(1, 1) = -ci; _jacobianOplusXi(1, 2) = -ci*dt.x()-si*dt.y();
-    _jacobianOplusXi(2, 0) =  0;  _jacobianOplusXi(2, 1) = 0;   _jacobianOplusXi(2, 2) = -1;
+    number_t vi_angle = vi_est.rotation().angle();
+    number_t vi_sin = std::sin(vi_angle);
+    number_t vi_cos = std::cos(vi_angle);
+    number_t vj_angle = vj_est.rotation().angle();
+    number_t vj_sin = std::sin(vj_angle);
+    number_t vj_cos = std::cos(vj_angle);
 
-    _jacobianOplusXj(0, 0) = ci; _jacobianOplusXj(0, 1)= si; _jacobianOplusXj(0, 2)= 0;
-    _jacobianOplusXj(1, 0) =-si; _jacobianOplusXj(1, 1)= ci; _jacobianOplusXj(1, 2)= 0;
-    _jacobianOplusXj(2, 0) = 0;  _jacobianOplusXj(2, 1)= 0;  _jacobianOplusXj(2, 2)= 1;
+    auto vi_jac& = _jacobianOplus[0];
+    vi_jac(0, 0) = -vi_cos; vi_jac(0, 1) = -vi_sin; vi_jac(0, 2) = -vi_sin * dt.x() + vi_cos * dt.y();
+    vi_jac(1, 0) =  vi_sin; vi_jac(1, 1) = -vi_cos; vi_jac(1, 2) = -vi_cos * dt.x() - vi_sin * dt.y();
+    vi_jac(2, 0) =  0;      vi_jac(2, 1) = 0;       vi_jac(2, 2) = -1;
+    Matrix3 zi = Matrix3::Identity();
+    zi.block<2, 2>(0, 0) = (_inverseMeasurement.rotation() * l_est.rotation().inverse()).toRotationMatrix();
+    vi_jac = zi * vi_jac;
 
-    const SE2& rmean = _inverseMeasurement;
-    Matrix3 z = Matrix3::Zero();
-    z.block<2, 2>(0, 0) = rmean.rotation().toRotationMatrix();
-    z(2, 2) = 1.;
-    _jacobianOplusXi = z * _jacobianOplusXi;
-    _jacobianOplusXj = z * _jacobianOplusXj;
+    auto vj_jac& = _jacobianOplus[1];
+    vj_jac(0, 0) = 1; vj_jac(0, 1)= 0; vj_jac(0, 2)= -vj_sin * l_est.translation.x() - vj_cos * l_est.translation.y();
+    vj_jac(1, 0) = 0; vj_jac(1, 1)= 1; vj_jac(1, 2)=  vj_cos * l_est.translation.x() - vj_sin * l_est.translation.y();
+    vj_jac(2, 0) = 0; vj_jac(2, 1)= 0; vj_jac(2, 2)= 1;
+    Matrix3 zj = Matrix3::Identity();
+    zj.block<2, 2>(0, 0) = - (_inverseMeasurement.rotation() * (vi_est.rotation() * l_est.rotation()).inverse()).toRotationMatrix();
+    vj_jac = zj * vj_jac;
+
+    //todo
+    auto l_jac& = _jacobianOplus[2];
+    l_jac(0, 0) = 1; l_jac(0, 1)= 0; l_jac(0, 2)= -vj_sin * l_est.translation.x() - vj_cos * l_est.translation.y();
+    l_jac(1, 0) = 0; l_jac(1, 1)= 1; l_jac(1, 2)=  vj_cos * l_est.translation.x() - vj_sin * l_est.translation.y();
+    l_jac(2, 0) = 0; l_jac(2, 1)= 0; l_jac(2, 2)= 0;
+    Matrix3 zl = Matrix3::Identity();
+    zl.block<2, 2>(0, 0) = - _inverseMeasurement.rotation().toRotationMatrix();
+    vj_jac = zl * vj_jac;
+
   }
 #endif
 
