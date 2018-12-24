@@ -71,6 +71,9 @@ namespace g2o {
     number_t vj_angle = vj_est.rotation().angle();
     number_t vj_sin = std::sin(vj_angle);
     number_t vj_cos = std::cos(vj_angle);
+    number_t l_angle = l_est.rotation().angle();
+    number_t l_sin = std::sin(l_angle);
+    number_t l_cos = std::cos(l_angle);
 
     auto& vi_jac = _jacobianOplus[0];
     vi_jac(0, 0) = -vi_cos; vi_jac(0, 1) = -vi_sin; vi_jac(0, 2) = -vi_sin * dt.x() + vi_cos * dt.y();
@@ -88,13 +91,13 @@ namespace g2o {
     zj.block<2, 2>(0, 0) = (_inverseMeasurement.rotation() * (vi_est.rotation() * l_est.rotation()).inverse()).toRotationMatrix();
     vj_jac = zj * vj_jac;
 
-    //todo
     auto& l_jac = _jacobianOplus[2];
-    l_jac(0, 0) = 1; l_jac(0, 1)= 0; l_jac(0, 2)= -vj_sin * l_est.translation().x() - vj_cos * l_est.translation().y();
-    l_jac(1, 0) = 0; l_jac(1, 1)= 1; l_jac(1, 2)=  vj_cos * l_est.translation().x() - vj_sin * l_est.translation().y();
+    l_jac.block<2, 2>(0, 0) = l_est.rotation().inverse() * ((vi_est.rotation().inverse() * vj_est.rotation()).toRotationMatrix() - Matrix2::Identity());
+    Matrix2 m; m << -l_sin, l_cos, -l_cos, -l_sin;
+    l_jac.block<2, 1>(0, 2)= m * (vi_est.rotation().inverse() * dt - l_est.translation());
     l_jac(2, 0) = 0; l_jac(2, 1)= 0; l_jac(2, 2)= 0;
     Matrix3 zl = Matrix3::Identity();
-    zl.block<2, 2>(0, 0) = - _inverseMeasurement.rotation().toRotationMatrix();
+    zl.block<2, 2>(0, 0) = _inverseMeasurement.rotation().toRotationMatrix();
     l_jac = zl * l_jac;
   }
 #endif
