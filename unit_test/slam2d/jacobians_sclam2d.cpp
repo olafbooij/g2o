@@ -43,13 +43,13 @@ static SE2 randomSE2()
 TEST(Sclam2D, EdgeSE2SensorCalibJacobian)
 {
   VertexSE2 v1;
-  v1.setId(0); 
+  v1.setId(0);
 
   VertexSE2 v2;
-  v2.setId(1); 
+  v2.setId(1);
 
   VertexSE2 v3;
-  v3.setId(2); 
+  v3.setId(2);
 
   EdgeSE2SensorCalib e;
   e.setVertex(0, &v1);
@@ -62,8 +62,7 @@ TEST(Sclam2D, EdgeSE2SensorCalibJacobian)
   numericJacobianWorkspace.updateSize(&e);
   numericJacobianWorkspace.allocate();
 
-  //for (int k = 0; k < 10000; ++k) {
-  for (int k = 0; k < 1; ++k) {
+  for (int k = 0; k < 10000; ++k) {
     v1.setEstimate(randomSE2());
     v2.setEstimate(randomSE2());
     v3.setEstimate(randomSE2());

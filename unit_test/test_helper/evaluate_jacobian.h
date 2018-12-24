@@ -99,9 +99,8 @@ void evaluateJacobianMulti(EdgeType& e, JacobianWorkspace& jacobianWorkspace, Ja
     // compute the numeric Jacobian into the numericJacobianWorkspace workspace as setup by the previous call
     e.BaseMultiEdge<EdgeType::Dimension, typename EdgeType::Measurement>::linearizeOplus();
 
-    // compare the two Jacobians
+    // compare the n Jacobians
     for (std::size_t i = 0; i < e.vertices().size(); ++i) {
-      std::cout << "evaluating vertex " << i << std::endl;
       number_t* n = numericJacobianWorkspace.workspaceForVertex(i);
       number_t* a = jacobianWorkspace.workspaceForVertex(i);
       int numElems = EdgeType::Dimension;
