@@ -57,8 +57,6 @@ namespace g2o {
     // some sanity checks, probably not necessary
     assert(_jacobianOplus.size() == 3 && "jacobian cache dimension does not match");
 
-    assert(_jacobianOplus[i].rows() == _dimension && _jacobianOplus[i].cols() == vi_dim && "jacobian cache dimension does not match");
-
     const SE2 vi_est = static_cast<const VertexSE2*>(_vertices[0])->estimate();
     const SE2 vj_est = static_cast<const VertexSE2*>(_vertices[1])->estimate();
     const SE2 l_est  = static_cast<VertexSE2*>(_vertices[2])->estimate();
